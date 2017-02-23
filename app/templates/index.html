@@ -1,6 +1,6 @@
 Hello,
-{% if current_user.is_authenticated() %}
-{{ current_user.username }}
+{% if current_user.is_authenticated %}
+    {{ current_user.nickname }}
 {% else %}
-Stranger
+    myStranger
 {% endif %}!

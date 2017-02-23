@@ -2,5 +2,6 @@
 <project version="4">
   <component name="SqlDialectMappings">
     <file url="dbSrc:///f4fa25f/34896bf3-1120-4e31-b544-eac221f64ff9" dialect="SQLite" />
+    <file url="dbSrc:///f4fa25f/8d25234f-988d-4c8e-b54a-b0bffdfe1d94" dialect="SQLite" />
   </component>
 </project>

@@ -1,12 +1,14 @@
 #蓝本中定义的程序路由
 
 from datetime import  datetime
-from flask import render_template,session,redirect,url_for
-
+from flask import render_template,session,redirect,url_for,flash
+from flask_login import login_required,current_user
 from . import main
-from . forms import NameForm
+from . forms import NameForm,EditProfileForm
 from .. import db
 from ..models import User
+from flask import abort
+
 
 '''
 @main.route('/', methods=['GET', 'POST'])
@@ -27,3 +29,24 @@ def index():
 @main.route('/')
 def index():
     return render_template('index.html')
+
+@main.route('/user/<username>')
+def user(username):
+    user = User.query.filter_by(username = username).first()
+    if user is None:
+        abort(404)
+    return render_template('user.html',user=user)
+
+@main.route('/edit-profile',methods=['GET','POST'])
+@login_required
+def edit_profile():
+    form = EditProfileForm()
+    if form.validate_on_submit():
+        current_user.username = form.username.data
+        current_user.location = form.location.data
+        db.session.add(current_user)
+        flash('Your profile has been updated.')
+        return redirect(url_for('.user', username=current_user.username))
+    form.username.data = current_user.username
+    form.location.data = current_user.location
+    return render_template('edit_profile.html', form=form)

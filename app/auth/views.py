@@ -1,7 +1,7 @@
 #蓝本中的路由和视图函数
 from flask import render_template, redirect,request,url_for,flash
 from . import auth
-from flask_login import login_user,logout_user,login_required,current_user
+from flask_login import login_user,logout_user,login_required,current_user,UserMixin
 from ..models import User,Role
 from . forms import LoginForm,ChangePasswordForm
 from . forms import RegistrationForm
@@ -54,3 +54,9 @@ def change_password():
         else:
             flash('Invalidate password')
     return render_template('auth/change_password.html', form = form)
+
+#更新已登录用户的访问时间
+@auth.before_app_request
+def befor_request():
+    if current_user.is_authenticated:
+        current_user.ping()

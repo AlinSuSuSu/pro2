@@ -3,7 +3,7 @@ from werkzeug.security import generate_password_hash,check_password_hash
 from flask_login import  UserMixin, AnonymousUserMixin
 from . import login_manager
 from . import db
-
+from datetime import datetime
 
 class Permission:
     FOLLOW = 0x01
@@ -58,6 +58,10 @@ class User(UserMixin,db.Model):
     username = db.Column(db.String(64), unique=True, index=True)
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))
     password_hash = db.Column(db.String(128))
+    location = db.Column(db.String(64))
+    member_since = db.Column(db.DateTime(),default=datetime.utcnow)
+    last_seen = db.Column(db.DateTime(),default=datetime.utcnow)
+
     @property
     def password(self):
         raise AttributeError('password is not a readable attribute')
@@ -82,6 +86,10 @@ class User(UserMixin,db.Model):
     def is_administrator(self):
         return self.can(Permission.ADMINISTER)
 
+    #刷新用户的最后访问时间,每次用户请求时都要调用ping()方法。
+    def ping(self):
+        self.last_seen = datetime.utcnow()
+        db.session.add(self)
 
 
     def __repr__(self):

@@ -21,17 +21,30 @@
             <a class="navbar-brand" href="{{ url_for('main.index') }}">Flasky</a>
         </div>
         <div class="navbar-collapse collapse">
-            <ul class="nav navbar-nav">
-                <li><a href="{{ url_for('main.index') }}">Home</a></li>
-                {% if current_user.is_authenticated %}
-                <li><a href="{{ url_for('main.user', username=current_user.username) }}">
-                    Profile
-                    </a>
+
+            <ul class="nav navbar-nav navbar-left">
+                <li class="dropdown">
+                     <a href="#" class = "dropdown-toggle" data-toggle="dropdown">Home</a>
+                    <ul class = "dropdown-menu">
+                        <li>aa</li>
+                        <li>bb</li>
+                    </ul>
                 </li>
-                {% endif %}
+            </ul>
+            <ul class="nav navbar-nav navbar-left">
+                <li class="dropdown">
+                     <a href="#" class = "dropdown-toggle" data-toggle="dropdown">主页</a>
+                    <ul class = "dropdown-menu">
+                        <li>cc</li>
+                        <li>dd</li>
+                    </ul>
+                </li>
             </ul>
 
             <ul class="nav navbar-nav navbar-right">
+                <li>
+                    <p class="navbar-brand">fdjkfjdkf</p>
+                </li>
                 {% if current_user.is_authenticated %}
                 <li class="dropdown">
                     <a href="#" class = "dropdown-toggle" data-toggle="dropdown">{{ current_user.nickname}}<b class = "caret"></b></a>

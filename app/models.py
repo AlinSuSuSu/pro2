@@ -78,8 +78,10 @@ class User(UserMixin,db.Model):
         if self.role is None:
             if self.nickname == 'admin':
                 self.role = Role.query.filter_by(permission=0xff).first()
+
             if self.role is None:
                 self.role = Role.query.filter_by(default=True).first()
+
     #检查用户是否有指定的权限
     def can(self,permissions):
         return self.role is not None and (self.role.permissions & permissions) == permissions

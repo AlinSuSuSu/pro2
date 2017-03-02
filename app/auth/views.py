@@ -33,8 +33,7 @@ def register():
         user = User(nickname=form.nickname.data,username = form.nickname.data,
 
                     password=form.password.data)
-        if form.nickname.data == 'admin':
-            user.role_id = 2
+
 
         db.session.add(user)
         flash('You can now login.')

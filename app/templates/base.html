@@ -1,11 +1,15 @@
+
 {% extends "bootstrap/base.html" %}
+
 
 {% block title %}Flasky{% endblock %}
 
 {% block head %}
 {{ super() }}
-<link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+<link rel="shortcut icon"  href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
 <link rel="icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
+<link rel="stylesheet" type="text/css" href="{{ url_for('static', filename = 'css/style.css') }}">
+
 {% endblock %}
 
 {% block navbar %}
@@ -43,7 +47,7 @@
 
             <ul class="nav navbar-nav navbar-right">
                 <li>
-                    <p class="navbar-brand">fdjkfjdkf</p>
+                    <p class="aa">fdjkfjdkf</p>
                 </li>
                 {% if current_user.is_authenticated %}
                 <li class="dropdown">
@@ -79,3 +83,5 @@
 {{ super() }}
 {{ moment.include_moment() }}
 {% endblock %}
+
+</html>

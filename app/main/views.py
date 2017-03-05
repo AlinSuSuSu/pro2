@@ -50,3 +50,8 @@ def edit_profile():
     form.username.data = current_user.username
     form.location.data = current_user.location
     return render_template('edit_profile.html', form=form)
+
+
+@main.route('/mod1')
+def mod1():
+    return render_template('mod1.html')

@@ -50,3 +50,4 @@ six 1.10.0
 times 0.7
 virtualenv 15.2.0.dev0
 visitor 0.1.3
+ForgeryPy3 0.3.1

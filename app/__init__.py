@@ -7,11 +7,15 @@ from flask_sqlalchemy import SQLAlchemy
 from config import config
 from flask_login import LoginManager
 
+#邮件
+from flask_mail import Mail
+
 
 
 bootstrap = Bootstrap()
 moment = Moment()
 db = SQLAlchemy()
+mail = Mail()
 
 login_manager = LoginManager()
 login_manager.session_protection = 'strong'
@@ -27,6 +31,8 @@ def create_app(config_name):
     bootstrap.init_app(app)
     moment.init_app(app)
     db.init_app(app)
+    mail.init_app(app)
+
     login_manager.init_app(app)
     #附加路由和自定义的错误页面
     from .main import main as main_blueprint

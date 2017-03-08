@@ -9,9 +9,9 @@ from flask import current_app
 
 class Permission:
     FOLLOW = 0x01
-    COMMIT = 0X02
-    WRITE_ARTICLE =0x04
-    MODERATE_COMMITS=0x08
+    COMMENT = 0X02
+    WRITE_ARTICLES =0x04
+    MODERATE_COMMENTS=0x08
     ADMINISTER=0x80
 
 
@@ -33,7 +33,7 @@ class Role(db.Model):
     def insert_roles():
         roles = {
             'User':(Permission.FOLLOW|
-                    Permission.COMMT|
+                    Permission.COMMENT|
                     Permission.WRITE_ARTICLES,True),
             'Moderator':(Permission.FOLLOW|
                          Permission.COMMENT|
@@ -65,6 +65,7 @@ class User(UserMixin,db.Model):
     member_since = db.Column(db.DateTime(),default=datetime.utcnow)
     last_seen = db.Column(db.DateTime(),default=datetime.utcnow)
     confirmed = db.Column(db.Boolean,default=True)
+    posts = db.relationship('Post',backref='author',lazy='dynamic')
 
 
     @property
@@ -78,11 +79,11 @@ class User(UserMixin,db.Model):
          return check_password_hash(self.password_hash, password)
 
     #定义默认角色
-    def __int__(self,**kwargs):
-        super(User, self).__int__(**kwargs)
+    def __init__(self,**kwargs):
+        super(User, self).__init__(**kwargs)
         if self.role is None:
             if self.nickname == 'admin':
-                self.role = Role.query.filter_by(permission=0xff).first()
+                self.role = Role.query.filter_by(permissions=0xff).first()
 
             if self.role is None:
                 self.role = Role.query.filter_by(default=True).first()
@@ -93,18 +94,19 @@ class User(UserMixin,db.Model):
     def is_administrator(self):
         return self.can(Permission.ADMINISTER)
 
-    #刷新用户的最后访问时间,每次用户请求时都要调用ping()方法。
+    # 刷新用户的最后访问时间,每次用户请求时都要调用ping()方法。
     def ping(self):
         self.last_seen = datetime.utcnow()
         db.session.add(self)
 
     ##确认用户
-    #生成令牌，有效时间一个小时
-    def generate_confirmation_token(self,expiration=3600):
-        s = Serializer(current_app.config['SECRET_KEY'],expiration)
-        return s.dumps({'confirm':self.id})
-    #检查令牌中的id是否和存储在current_user中的已登录用户匹配
-    def confirm(self,token):
+    # 生成令牌，有效时间一个小时
+    def generate_confirmation_token(self, expiration=3600):
+        s = Serializer(current_app.config['SECRET_KEY'], expiration)
+        return s.dumps({'confirm': self.id})
+
+        # 检查令牌中的id是否和存储在current_user中的已登录用户匹配
+    def confirm(self, token):
         s = Serializer(current_app.config['SECRET_KEY'])
         try:
             data = s.loads(token)
@@ -116,14 +118,24 @@ class User(UserMixin,db.Model):
         db.session.add(self)
         return True
 
-
     def __repr__(self):
         return '<User %r>' % self.username
+
 
 class AnonymousUser(AnonymousUserMixin):
     def can(self, permissions):
         return False
+
     def is_adminstrator(self):
         return False
 
-login_manager.anonymous_user=AnonymousUser
+login_manager.anonymous_user = AnonymousUser
+
+
+class Post(db.Model):
+    __tablename__='posts'
+    id = db.Column(db.Integer,primary_key=True)
+    body = db.Column(db.Text)
+    timestamp = db.Column(db.DateTime,index=True,default=datetime.utcnow)
+    author_id = db.Column(db.Integer,db.ForeignKey('users.id'))
+

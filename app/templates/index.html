@@ -1,6 +1,16 @@
-Hello,
-{% if current_user.is_authenticated %}
-    {{ current_user.nickname }}
-{% else %}
-    myStranger
-{% endif %}!
+{% extends "base.html" %}
+{% import "bootstrap/wtf.html" as wtf %}
+
+{% block title %}Flasky{% endblock %}
+
+{% block page_content %}
+    <div class="page-header">
+        <h4>Hello, {% if current_user.is_authenticated %}{{ current_user.username }}{% else %}Stranger{% endif %}!</h4>
+    </div>
+    <div>
+    {% if current_user.can(Permission.WRITE_ARTICLES) %}
+    {{ wtf.quick_form(form) }}
+    {% endif %}
+    </div>
+    {% include 'posts.html' %}
+{% endblock %}

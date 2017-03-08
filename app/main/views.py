@@ -4,9 +4,10 @@ from datetime import  datetime
 from flask import render_template,session,redirect,url_for,flash
 from flask_login import login_required,current_user
 from . import main
-from . forms import NameForm,EditProfileForm
+from . forms import NameForm,PostForm,EditProfileForm,EditProfileAdminForm
 from .. import db
-from ..models import User
+from ..decorators import admin_required
+from ..models import User,Role,Permission,Post
 from flask import abort
 
 
@@ -26,16 +27,23 @@ def index():
         return redirect(url_for('.index'))
     return render_template('index.html',form=form, name=session.get('name'),known=session.get('known', False))
 '''
-@main.route('/')
+@main.route('/',methods=['GET','POST'])
 def index():
-    return render_template('index.html')
+    form = PostForm()
+    if current_user.can(Permission.WRITE_ARTICLES) and form.validate_on_submit():
+        post=Post(body=form.body.data,author=current_user._get_current_object())
+        db.session.add(post)
+        return redirect(url_for('.index'))
+    posts =Post.query.order_by(Post.timestamp.desc()).all()
+    return render_template('index.html',form =form,posts=posts)
 
 @main.route('/user/<nickname>')
 def user(nickname):
     user = User.query.filter_by(nickname = nickname).first()
     if user is None:
         abort(404)
-    return render_template('user.html',user=user)
+    posts=user.posts.order_by(Post.timestamp.desc()).all()
+    return render_template('user.html',user=user,posts=posts)
 
 @main.route('/edit-profile',methods=['GET','POST'])
 @login_required
@@ -46,7 +54,7 @@ def edit_profile():
         current_user.location = form.location.data
         db.session.add(current_user)
         flash('Your profile has been updated.')
-        return redirect(url_for('.user', username=current_user.username))
+        return redirect(url_for('.user', nickname=current_user.nickname))
     form.username.data = current_user.username
     form.location.data = current_user.location
     return render_template('edit_profile.html', form=form)
@@ -55,3 +63,30 @@ def edit_profile():
 @main.route('/mod1')
 def mod1():
     return render_template('mod1.html')
+
+
+@main.route('/edit-profile/<int:id>', methods=['GET', 'POST'])
+@login_required
+@admin_required
+def edit_profile_admin(id):
+    user = User.query.get_or_404(id)
+    form = EditProfileAdminForm(user=user)
+    if form.validate_on_submit():
+        user.email = form.email.data
+        user.nickname = form.nickname.data
+        user.confirmed = form.confirmed.data
+        user.role = Role.query.get(form.role.data)
+        user.username = form.username.data
+        user.location = form.location.data
+        #user.about_me = form.about_me.data
+        db.session.add(user)
+        flash('The profile has been updated.')
+        return redirect(url_for('.user', nickname=user.nickname))
+    form.email.data = user.email
+    form.username.data = user.username
+    form.confirmed.data = user.confirmed
+    form.role.data = user.role_id
+    form.nickname.data = user.nickname
+    form.location.data = user.location
+    #form.about_me.data = user.about_me
+    return render_template('edit_profile.html', form=form, user=user)

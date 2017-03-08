@@ -9,9 +9,9 @@ from flask import current_app
 
 class Permission:
     FOLLOW = 0x01
-    COMMENT = 0X02
-    WRITE_ARTICLES =0x04
-    MODERATE_COMMENTS=0x08
+    COMMIT = 0X02
+    WRITE_ARTICLE =0x04
+    MODERATE_COMMITS=0x08
     ADMINISTER=0x80
 
 
@@ -33,7 +33,7 @@ class Role(db.Model):
     def insert_roles():
         roles = {
             'User':(Permission.FOLLOW|
-                    Permission.COMMENT|
+                    Permission.COMMT|
                     Permission.WRITE_ARTICLES,True),
             'Moderator':(Permission.FOLLOW|
                          Permission.COMMENT|
@@ -64,7 +64,7 @@ class User(UserMixin,db.Model):
     location = db.Column(db.String(64))
     member_since = db.Column(db.DateTime(),default=datetime.utcnow)
     last_seen = db.Column(db.DateTime(),default=datetime.utcnow)
-    confirmed = db.Column(db.Boolean,default=False)
+    confirmed = db.Column(db.Boolean,default=True)
 
 
     @property

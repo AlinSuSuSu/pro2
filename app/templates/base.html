@@ -32,6 +32,7 @@
                     <ul class = "dropdown-menu">
                         <li>aa</li>
                         <li>bb</li>
+
                     </ul>
                 </li>
             </ul>
@@ -44,10 +45,14 @@
                     </ul>
                 </li>
             </ul>
-
+            <ul class="nav navbar-nav navbar-left">
+                {% if current_user.is_authenticated %}
+                <li><a href="{{ url_for('main.edit_profile') }}">Profile</a></li>
+                {% endif %}
+            </ul>
             <ul class="nav navbar-nav navbar-right">
                 <li>
-                    <p class="aa">fdjkfjdkf</p>
+                    <p class="aa">热线：12345678</p>
                 </li>
                 {% if current_user.is_authenticated %}
                 <li class="dropdown">

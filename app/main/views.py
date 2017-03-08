@@ -30,9 +30,9 @@ def index():
 def index():
     return render_template('index.html')
 
-@main.route('/user/<username>')
-def user(username):
-    user = User.query.filter_by(username = username).first()
+@main.route('/user/<nickname>')
+def user(nickname):
+    user = User.query.filter_by(nickname = nickname).first()
     if user is None:
         abort(404)
     return render_template('user.html',user=user)

@@ -14,6 +14,7 @@ class Config:
     MAIL_PASSWORD = 'shouquanma201'
     FLASKY_MAIL_SUBJECT_PREFIX='[Flasky]'
     FLASKY_MAIL_SENDER = 'FLASKY <18883325578@163.com>'
+    FLASKY_POSTS_PER_PAGE=20
 
 
     @staticmethod

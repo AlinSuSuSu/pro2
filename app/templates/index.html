@@ -1,8 +1,12 @@
 {% extends "base.html" %}
 {% import "bootstrap/wtf.html" as wtf %}
-
+{% import "_macros.html" as macro %}
 {% block title %}Flasky{% endblock %}
-
+{% block head %}
+{{ super() }}
+    <link href="http://maxcdn.bootstrapcdn.com/font-awesome/4.2.0/css/font-awesome.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename = 'css/style.css') }}" media="screen" type="text/css" />
+{% endblock %}
 {% block page_content %}
     <div class="page-header">
         <h4>Hello, {% if current_user.is_authenticated %}{{ current_user.username }}{% else %}Stranger{% endif %}!</h4>
@@ -13,4 +17,7 @@
     {% endif %}
     </div>
     {% include 'posts.html' %}
+    <div class="pagination">
+    {{ macro.pagination_widget(pagination,'.index') }}
+    </div>
 {% endblock %}

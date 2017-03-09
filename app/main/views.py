@@ -1,7 +1,7 @@
 #蓝本中定义的程序路由
 
 from datetime import  datetime
-from flask import render_template,session,redirect,url_for,flash
+from flask import render_template,session,redirect,url_for,flash,request,current_app
 from flask_login import login_required,current_user
 from . import main
 from . forms import NameForm,PostForm,EditProfileForm,EditProfileAdminForm
@@ -34,16 +34,23 @@ def index():
         post=Post(body=form.body.data,author=current_user._get_current_object())
         db.session.add(post)
         return redirect(url_for('.index'))
-    posts =Post.query.order_by(Post.timestamp.desc()).all()
-    return render_template('index.html',form =form,posts=posts)
+    page = request.args.get('page',1,type=int)
+    pagination = Post.query.order_by(Post.timestamp.desc()).paginate(page,per_page=current_app.config['FLASKY_POSTS_PER_PAGE'],error_out=False)
+    posts = pagination.items
+    return render_template('index.html',form=form, posts=posts, pagination=pagination)
+    #posts =Post.query.order_by(Post.timestamp.desc()).all()
+    #return render_template('index.html',form =form,posts=posts)
 
 @main.route('/user/<nickname>')
 def user(nickname):
     user = User.query.filter_by(nickname = nickname).first()
     if user is None:
         abort(404)
-    posts=user.posts.order_by(Post.timestamp.desc()).all()
-    return render_template('user.html',user=user,posts=posts)
+    page = request.args.get('page', 1, type=int)
+    pagination = Post.query.order_by(Post.timestamp.desc()).paginate(page, per_page=current_app.config[
+        'FLASKY_POSTS_PER_PAGE'], error_out=False)
+    posts = pagination.items
+    return render_template('index.html',  posts=posts, pagination=pagination)
 
 @main.route('/edit-profile',methods=['GET','POST'])
 @login_required

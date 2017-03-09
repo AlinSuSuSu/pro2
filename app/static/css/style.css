@@ -158,3 +158,9 @@ h1 a {
 ul.posts li.post:hover {
   background-color: #f0f0f0;
  }
+div.pagination {
+    width: 100%;
+    text-align: right;
+    padding: 0px;
+	margin: 0px;
+ }

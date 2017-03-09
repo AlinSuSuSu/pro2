@@ -5,39 +5,53 @@
 {% block title %}Flasky - User{% endblock %}
 {% block page_content %}
 <div class="page-header">
+<div class="profile-header">
     <h4>{{ user.nickname }}</h4>
-    {% if user.nickname  %}
-    <p>
-        {% if user.nickname  %}{{ user.nickname }}{% endif %}
-        {% if user.location %}From
-            <a href="http://map.baidu.com/?q={{ user.location }}">{{ user.location }}
-            </a>
-        {% endif %}
-    </p>
+    {% if user.nickname or user.location  %}
+        <p>
+            {% if user.nickname  %}{{ user.nickname }}{% endif %}
+            {% if user.location %}From
+                <a href="http://map.baidu.com/?q={{ user.location }}">{{ user.location }}</a>
+             {% endif %}
+        </p>
     {% endif %}
     {% if current_user.is_administrator() %}
-    <p>{{ user.nickname }} </p>
+        <p>{{ user.nickname }} </p>
     {% endif %}
-    {% if user ==current_user %}
-        <a class="btn btn-default" href="{{ url_for(".edit_profile") }}">
-        Edit Profile
-        </a>
-
-    {% endif %}
-    {% if current_user.is_administrator() %}
-        <a class="btn btn-danger" href="{{ url_for('.edit_profile_admin', id=user.id) }}">Edit Profile [Admin]</a>
-    {% endif %}
-
     <P>
         Member since{{ moment(user.member_since).format('L') }}<br>
         Last seen {{ moment(user.last_seen).fromNow() }}
     </P>
     <P>{{ user.posts.count() }}blog posts</P>
-
+    <P>
+     {% if current_user.can(Permission.FOLLOW) and user != current_user %}
+         {% if not current_user.is_following(user) %}
+             <a href="{{ url_for('.follow', nickname=user.nickname) }}" class="btn btn-primary">Follow</a>
+         {% else %}
+             <a href="{{ url_for('.unfollow', nickname=user.nickname) }}" class="btn btn-default">Unfollow</a>
+         {% endif %}
+     {% endif %}
+     <a href="{{ url_for('.followers', nickname=user.nickname) }}">Followers: <span class="badge">{{ user.followers.count() }}</span></a>
+     <a href="{{ url_for('.followed_by', nickname=user.nickname) }}">Following: <span class="badge">{{ user.followed.count() }}</span></a>
+     {% if current_user.is_authenticated and user != current_user and user.is_following(current_user) %}
+         | <span class="label label-default">Follows you</span>
+     {% endif %}
+    </p>
+    <p>
+        {% if user ==current_user %}
+            <a class="btn btn-default" href="{{ url_for(".edit_profile") }}">Edit Profile</a>
+        {% endif %}
+        {% if current_user.is_administrator() %}
+            <a class="btn btn-danger" href="{{ url_for('.edit_profile_admin', id=user.id) }}">Edit Profile [Admin]</a>
+        {% endif %}
+    </P>
 </div>
-    <h3>posts by {{ user.nickname }}</h3>
-    {% include 'posts.html' %}
+</div>
+<h3>posts by {{ user.nickname }}</h3>
+{% include 'posts.html' %}
+{% if pagination %}
     <div class="pagination">
-    {{ macro.pagination_widget(pagination,'.index') }}
+    {{ macro.pagination_widget(pagination,'.user',nickname=user.nickname) }}
     </div>
+{% endif %}
 {% endblock %}

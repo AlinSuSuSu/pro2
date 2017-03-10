@@ -5,8 +5,9 @@ from . import login_manager
 from . import db
 from datetime import datetime
 from itsdangerous import TimedJSONWebSignatureSerializer as Serializer
-from flask import current_app
+from flask import current_app,url_for
 from markdown import markdown
+from app.exceptions import ValidationError
 import bleach
 
 class Permission:
@@ -128,6 +129,8 @@ class User(UserMixin,db.Model):
         self.confirmed = True
         db.session.add(self)
         return True
+
+
     @staticmethod
     def generate_fake(count=100):
         from sqlalchemy.exc import IntegrityError
@@ -147,6 +150,8 @@ class User(UserMixin,db.Model):
                 db.session.commit()
             except IntegrityError:
                 db.session.rollback()
+
+
     def follow(self,user):
         if not self.is_following(user):
             f = Follow(follower=self,followed=user)
@@ -159,6 +164,32 @@ class User(UserMixin,db.Model):
         return self.followed.filter_by(followed_id=user.id).first() is not None
     def is_followed_by(self,user):
         return self.followers.filter_by(follower_id=user.id).first() is not None
+
+    def to_json(self):
+        json_user={
+            'url':url_for('api.get_user',id = self.id,_external=True),
+            'username':self.username,
+            'member_since':self.member_since,
+            'last_seen':self.last_seen,
+            'posts':url_for('api.get_user_posts',id=self.id,_external=True),
+            'followed_posts':url_for('api.get_user_followed_posts',id=self.id,_external=True),
+            'post_count':self.posts.count()
+        }
+        return json_user
+
+
+    #支持基于令牌的认证
+    def generate_auth_token(self,expiration):
+        s =Serializer(current_app.config['SECRET_KEY'])
+        return s.dumps({'id':self.id})
+    @staticmethod
+    def verify_auth_token(token):
+        s = Serializer(current_app.config['SECRET_KEY'])
+        try:
+            data = s.loads(token)
+        except:
+            return None
+        return User.query.get(data['id'])
 
     @property
     def followed_posts(self):
@@ -204,5 +235,24 @@ class Post(db.Model):
     def on_changed_body(target,value,oldvalue,initiator):
         allowed_tags = ['a','abbr','acronym','b','blockquote','code','em','i','li','ol','pre','strong','ul','h1','h2','h3','p']
         target.body_html = bleach.linkify(bleach.clean(markdown(value,output_format='html'),tags=allowed_tags,strip=True))
+
+    def to_json(self):
+        json_post={
+            'url':url_for('api.get_post',id=self.id,_external=True),
+            'body':self.body,
+            'body_html':self.body_html,
+            'timestamp':self.timestamp,
+            'author':url_for('api.get_user',id=self.author_id,_external=True),
+
+        }
+        return json_post
+    #从JSON格式数据创建一篇博客文章
+    @staticmethod
+    def from_json(json_post):
+        body=json_post.get('body')
+        if body is None or body =='':
+            raise ValidationError('post does not have a body')
+        return Post(body=body)
+
 db.event.listen(Post.body,'set',Post.on_changed_body)
 
